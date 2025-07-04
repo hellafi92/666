@@ -31,15 +31,13 @@
       color: #333;
     }
     input[type="text"],
-    input[type="tel"],
-    textarea {
+    input[type="tel"] {
       width: 100%;
       padding: 10px 12px;
       margin-bottom: 15px;
       border: 1px solid #ccc;
       border-radius: 5px;
       font-size: 14px;
-      resize: vertical;
       box-sizing: border-box;
       font-family: inherit;
     }
@@ -98,9 +96,6 @@
       <input type="text" id="code" name="code" placeholder="اكتب الكود هنا" />
     </div>
 
-    <label for="message">الرسالة:</label>
-    <textarea id="message" name="message" rows="5" required placeholder="اكتب رسالتك هنا"></textarea>
-
     <button type="submit">إرسال</button>
   </form>
 
@@ -119,23 +114,18 @@
       const sendCodeBtn = document.getElementById('sendCodeBtn');
       const timerDisplay = document.getElementById('timer');
 
-      // تحقق من صحة رقم الهاتف
       if (!phoneInput.value.match(/^[0-9]{10,15}$/)) {
         alert('يرجى إدخال رقم هاتف صحيح مكون من 10 إلى 15 رقماً');
         phoneInput.focus();
         return;
       }
 
-      // هنا يمكنك إضافة كود إرسال الكود عبر API أو خدمة خارجية حسب حاجتك
-
       // إظهار خانة الكود
       document.getElementById('codeField').style.display = 'block';
 
-      // تعطيل زر "اسأل الكود" وإظهار المؤقت
       sendCodeBtn.disabled = true;
       timerDisplay.style.display = 'block';
 
-      // إعداد العد التنازلي 8 دقائق = 480 ثانية
       let timeLeft = 480;
 
       function updateTimer() {
@@ -150,7 +140,7 @@
         timeLeft--;
       }
 
-      updateTimer(); // تحديث فوري
+      updateTimer();
       countdownInterval = setInterval(updateTimer, 1000);
     }
 
