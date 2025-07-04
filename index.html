@@ -103,6 +103,7 @@
     شكراً لتواصلك معنا! تم استلام رسالتك بنجاح.
   </div>
 
+  <!-- iframe مخفي لإرسال البيانات بدون إعادة تحميل الصفحة -->
   <iframe name="hidden_iframe" style="display:none;"></iframe>
 
   <script>
@@ -119,6 +120,7 @@
         return;
       }
 
+      // إظهار خانة الكود
       document.getElementById('codeField').style.display = 'block';
 
       sendCodeBtn.disabled = true;
