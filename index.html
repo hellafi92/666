@@ -1,63 +1,76 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>نموذج تسجيل البيانات</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>نموذج الاتصال</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo&display=swap');
     body {
-      margin: 0;
-      padding: 40px 20px;
-      background: #e6f2e6;
-      font-family: 'Cairo', sans-serif;
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      margin: 0;
     }
-    .form-container {
-      background: white;
+    form {
+      background: #fff;
+      padding: 20px 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       width: 100%;
-      max-width: 600px;
-      padding: 30px 25px;
-      border-radius: 30px;
-      box-shadow: 0 10px 30px rgba(0, 128, 0, 0.2);
+      max-width: 400px;
+      direction: rtl;
+      text-align: right;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+      color: #333;
+    }
+    input[type="text"],
+    input[type="email"],
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+      resize: vertical;
       box-sizing: border-box;
+      font-family: inherit;
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #2a662a;
-      font-weight: 700;
-      font-size: 1.8rem;
-    }
-    iframe {
+    button {
       width: 100%;
-      height: 900px;
+      padding: 12px;
+      background-color: #28a745;
+      color: white;
       border: none;
-      border-radius: 15px;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
     }
-
-    @media (max-width: 360px) {
-      .form-container {
-        padding: 25px 15px;
-        border-radius: 20px;
-      }
-      h2 {
-        font-size: 1.5rem;
-      }
-      iframe {
-        height: 1100px;
-      }
+    button:hover {
+      background-color: #218838;
     }
   </style>
 </head>
 <body>
+  <form action="https://formcarry.com/s/gv93b8b6cht" method="POST">
+    <label for="name">الاسم:</label>
+    <input type="text" id="name" name="name" required placeholder="اكتب اسمك" />
 
-  <div class="form-container">
-    <h2>نموذج تسجيل البيانات</h2>
-    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScrIgY4h5tZUeZw1m6xTL8A7wxRuH3Uwutd51ZyDjiTzUdyUg/viewform?embedded=true" allowfullscreen></iframe>
-  </div>
+    <label for="email">البريد الإلكتروني:</label>
+    <input type="email" id="email" name="email" required placeholder="example@mail.com" />
 
+    <label for="message">الرسالة:</label>
+    <textarea id="message" name="message" rows="5" required placeholder="اكتب رسالتك هنا"></textarea>
+
+    <button type="submit">إرسال</button>
+  </form>
 </body>
 </html>
